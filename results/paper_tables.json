@@ -1,0 +1,358 @@
+{
+  "tab:equal-access-baseline": {
+    "table": "II",
+    "source": "data/equal_access/reported_results.json",
+    "rows": [
+      [
+        "Inspection + direct rescore",
+        "Old",
+        "48 / 0 / 0",
+        "48 / 96",
+        "34020",
+        "5.469"
+      ],
+      [
+        "Inspection + intervals",
+        "Old",
+        "48 / 0 / 0",
+        "48 / 96",
+        "34020",
+        "5.471"
+      ],
+      [
+        "Inspection + direct rescore",
+        "Corrected",
+        "0 / 48 / 0",
+        "48 / 96",
+        "34034",
+        "5.365"
+      ],
+      [
+        "Inspection + intervals",
+        "Corrected",
+        "0 / 48 / 0",
+        "48 / 96",
+        "34034",
+        "5.378"
+      ],
+      [
+        "Ordinary top ten",
+        "Old",
+        "48 / 0 / 0",
+        "48 / 480",
+        "88683",
+        "\u2014"
+      ],
+      [
+        "Ordinary top ten",
+        "Corrected",
+        "0 / 0 / 48",
+        "48 / 480",
+        "88608",
+        "\u2014"
+      ]
+    ]
+  },
+  "tab:paired-audit": {
+    "table": "IV",
+    "source": "data/attribution/episodes.jsonl",
+    "rows": [
+      [
+        "Rank change",
+        "72",
+        "107",
+        "159",
+        "72",
+        "126",
+        "0"
+      ],
+      [
+        "Pair-gap change",
+        "23",
+        "25",
+        "433",
+        "72",
+        "72",
+        "144"
+      ],
+      [
+        "Target, nonzero",
+        "45",
+        "0",
+        "212",
+        "72",
+        "0",
+        "0"
+      ],
+      [
+        "Target, guarded point",
+        "45",
+        "0",
+        "212",
+        "72",
+        "0",
+        "0"
+      ],
+      [
+        "Target, interval",
+        "72",
+        "0",
+        "185",
+        "72",
+        "0",
+        "0"
+      ],
+      [
+        "Interval + null gate",
+        "43",
+        "0",
+        "301",
+        "72",
+        "0",
+        "0"
+      ]
+    ]
+  },
+  "tab:boundary-depth": {
+    "table": "V",
+    "source": "data/precision/natural.jsonl",
+    "rows": [
+      [
+        "128",
+        "5",
+        "34",
+        "49",
+        "81",
+        "66"
+      ],
+      [
+        "128",
+        "10",
+        "64",
+        "64",
+        "0",
+        "0"
+      ],
+      [
+        "128",
+        "50",
+        "64",
+        "64",
+        "0",
+        "0"
+      ],
+      [
+        "512",
+        "5",
+        "34",
+        "49",
+        "81",
+        "66"
+      ],
+      [
+        "512",
+        "10",
+        "64",
+        "64",
+        "0",
+        "0"
+      ],
+      [
+        "512",
+        "50",
+        "64",
+        "64",
+        "0",
+        "0"
+      ],
+      [
+        "1024",
+        "5",
+        "34",
+        "49",
+        "81",
+        "66"
+      ],
+      [
+        "1024",
+        "10",
+        "64",
+        "64",
+        "0",
+        "0"
+      ],
+      [
+        "1024",
+        "50",
+        "64",
+        "64",
+        "0",
+        "0"
+      ]
+    ]
+  },
+  "tab:precision": {
+    "table": "VI",
+    "source": "data/precision/natural.jsonl",
+    "rows": [
+      [
+        "full",
+        "531",
+        "999",
+        "198",
+        "0"
+      ],
+      [
+        "6",
+        "531",
+        "999",
+        "198",
+        "0"
+      ],
+      [
+        "4",
+        "501",
+        "0",
+        "1227",
+        "18"
+      ],
+      [
+        "3",
+        "336",
+        "0",
+        "1392",
+        "45"
+      ],
+      [
+        "2",
+        "18",
+        "0",
+        "1710",
+        "354"
+      ]
+    ]
+  },
+  "tab:precision-guidance": {
+    "table": "VII",
+    "source": "analytical rounding identities",
+    "rows": [
+      [
+        "Exact native scores",
+        "0",
+        "epsilon >= 0"
+      ],
+      [
+        "Nearest rounding, 8 decimals",
+        "10^-8",
+        "epsilon >= 10^-8"
+      ],
+      [
+        "Nearest rounding, 6 decimals",
+        "10^-6",
+        "epsilon >= 10^-6"
+      ],
+      [
+        "Nearest rounding, 4 decimals",
+        "10^-4",
+        "epsilon >= 10^-4"
+      ],
+      [
+        "Same rounding step h, additional errors eta_0, eta_1",
+        "h+eta_0+eta_1",
+        "epsilon >= w"
+      ]
+    ]
+  },
+  "tab:scifact": {
+    "table": "VIII",
+    "source": "data/scifact/decisions.json",
+    "rows": [
+      [
+        "128",
+        "34 / 34",
+        "34 / 35",
+        "36 / 36",
+        "36 / 36",
+        "1"
+      ],
+      [
+        "512",
+        "32 / 32",
+        "34 / 34",
+        "34 / 34",
+        "36 / 36",
+        "0"
+      ],
+      [
+        "5183",
+        "23 / 24",
+        "26 / 26",
+        "26 / 28",
+        "34 / 34",
+        "3"
+      ]
+    ]
+  },
+  "tab:geometry-main": {
+    "table": "IX",
+    "source": "data/geometry/analysis.json",
+    "rows": [
+      [
+        "FlatIP",
+        "5",
+        "227 / 217 / 166",
+        "349",
+        "102"
+      ],
+      [
+        "FlatIP",
+        "10",
+        "246 / 239 / 125",
+        "261",
+        "126"
+      ],
+      [
+        "FlatIP",
+        "20",
+        "259 / 252 / 99",
+        "209",
+        "137"
+      ],
+      [
+        "FlatIP",
+        "50",
+        "271 / 267 / 72",
+        "148",
+        "127"
+      ],
+      [
+        "HNSW",
+        "5",
+        "209 / 215 / 186",
+        "355",
+        "101"
+      ],
+      [
+        "HNSW",
+        "10",
+        "234 / 239 / 137",
+        "263",
+        "124"
+      ],
+      [
+        "HNSW",
+        "20",
+        "247 / 250 / 113",
+        "215",
+        "135"
+      ],
+      [
+        "HNSW",
+        "50",
+        "264 / 264 / 82",
+        "157",
+        "146"
+      ]
+    ]
+  }
+}
