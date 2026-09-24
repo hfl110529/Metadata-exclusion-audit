@@ -1,0 +1,6 @@
+route,resolved,calls,response_bytes,score_values,published_projection_bytes
+k=10,0,48,580684,480,
+k=20,2,48,1163751,960,
+k=50,24,48,2918903,2400,
+k=192,48,48,11171866,9216,
+Trusted targets,48,48,121694,96,10684
