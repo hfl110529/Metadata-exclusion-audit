@@ -1,2 +1,0 @@
-# Only needed for --all (SciFact saved vectors and ANN saved-score analysis).
-numpy==2.5.3
