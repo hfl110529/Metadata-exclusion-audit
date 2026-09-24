@@ -1,4 +1,0 @@
-efSearch,mean_recall_at_k,responses,invalid_cutoffs,invalid_cutoff_fraction
-8,0.8283203125,256,163,0.63671875
-32,0.968671875,256,98,0.3828125
-128,0.9971875,256,22,0.0859375
