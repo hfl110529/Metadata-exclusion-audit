@@ -33,7 +33,7 @@ def main():
     if args.output and args.output.exists():
         parser.error('Choose a new output filename; existing results are not overwritten.')
     count = verify_files()
-    names = ['upstream_update', 'migration', 'reader_repair', 'equal_access', 'attribution', 'precision', 'geometry', 'paper_results']
+    names = ['upstream_update', 'migration', 'reader_repair', 'equal_access', 'attribution', 'precision', 'geometry', 'backend_updates', 'policy_refresh', 'access_sql', 'access_qdrant', 'score_retention', 'extensions', 'paper_results']
     if args.all:
         names += ['scifact', 'ann']
     results = {}

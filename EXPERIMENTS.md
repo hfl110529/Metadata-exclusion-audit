@@ -16,7 +16,7 @@ A score verdict concerns the declared finite comparisons. It does not establish 
 
 The principal encoder is `sentence-transformers/all-MiniLM-L6-v2`, revision `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, with normalized float32 embeddings. The recorded native environment uses Python 3.12.3, Haystack 2.31.0, NumPy 2.5.3 and, for approximate/exact vector-index experiments, `faiss-cpu` 1.15.1. Encoding provenance records Sentence Transformers 6.0.1, Transformers 5.15.1 and PyTorch 2.13.0. The service ingestion experiments additionally use Hayhooks 1.24.0. The upstream regression compares `llama-index-core` 0.12.27 and 0.12.28 with identical other dependencies.
 
-Saved-evidence verification reconstructs scores where vectors are supplied and reclassifies the recorded score intervals and summaries. The attribution and precision checks start from the supplied per-comparison records; they do not recreate censored or rounded intervals from raw HTTP responses. It does not rerun encoding or contact the original services. The optional native LlamaIndex reproduction is described below. A fresh collection requires the native dependencies, pinned model, fixed input selection and the collection procedures below; it produces a separate measurement, not a replacement for the supplied results.
+The commands in [README.md](README.md) replay saved evidence. The procedures below describe collection; fresh service/model execution produces new measurements. Each subsection identifies the supplied inputs and expected result.
 
 ## Metadata-update regression in LlamaIndex
 
@@ -41,7 +41,7 @@ Use a different output directory for the fixed version. This runs native update/
 
 ## Metadata exclusion, replacement and serving state
 
-Evidence: [data/migration](data/migration) and [data/reader_repair](data/reader_repair).
+Evidence: [data/migration](data/migration) (aggregate stage results) and [data/reader_repair](data/reader_repair) (native snapshots and responses).
 
 **Purpose:** distinguish a changed input policy, replacement writes and the representations used to answer retrieval requests.
 
@@ -127,3 +127,63 @@ Evidence: [data/geometry](data/geometry).
 6. Evaluate against separate complete native scores: 2,272 scans covering 11,775,776 scores. Report every engine/depth stratum, interval containment, additional decisions and interval-width changes.
 
 **Expected result:** all four methods yield 1,957 supported effects, 1,943 no-effect verdicts and 980 insufficiencies. Of 1,957 omitted phase scores, 998 have anchors and narrower bounds, but none changes a verdict. All 980 unresolved difference intervals contain zero; their median width is 2.91579. Independent checking of 5,988 certificates finds no containment or decisive-label errors. This negative result distinguishes interval tightening from useful decision gain. The numerical contract and disclosed query coordinates are additional assumptions/access beyond an ordinary score-only API.
+
+## Payload removal and policy-only refresh
+
+Evidence: [data/backend_updates](data/backend_updates). The [protocol](data/backend_updates/protocol.json) contains the exact 36 document bodies, two protected-note histories, twelve queries and model revisions.
+
+1. Encode the fixed strings with MiniLM and `BAAI/bge-m3` revision `5617a9f61b028005a4858fdac845db406aefb181`. Use CPU, four threads, float32, batch size four and L2 normalization. MiniLM uses attention-mask mean pooling; BGE-M3 uses the dense CLS representation. Apply no query prefix and reject truncation.
+2. For each model, create two persistent worlds in Qdrant Client 1.19.1 local mode and Chroma 1.5.9. Preserve all twelve targets, 24 backgrounds, insertion order, IDs and permitted bodies. Qdrant uses native exhaustive cosine; Chroma uses cosine HNSW with batch/sync thresholds 3, efSearch 128 and one thread.
+3. Run the six registered stages: included input; unchanged repeat; audit-tag-only update; delete `protected_note` and mark body-only input policy; replace vectors with body-only embeddings; edit the excluded note again. Read back every vector/payload and request native top-five, top-ten and all 36 candidate scores for every query at each stage.
+4. Compare vector bytes before/after metadata deletion, native paired scores, background controls and membership. Reconstruct all full scores from returned vectors. Treat Chroma top-k membership as approximate; use complete native scores for the score-effect reference.
+
+**Expected result:** all twelve effects persist after metadata removal in every configuration. Median absolute differences are 0.026695/0.027475 for MiniLM/BGE-M3. Replacement makes all paired candidate differences zero. The two backends share inputs; these are dependent comparisons. Qdrant local search can renormalize vectors in place, with observed coordinate drift up to 2.98e-8.
+
+For the separate LlamaIndex 0.12.28 diagnostic, use document IDs 1/101/201 and query `q01` from the same fixture. Supply captured MiniLM vectors through an exact-string adapter. Use text template `{content}\n{metadata_str}`, metadata template `{key}: {value}`, chunk size 512 and zero overlap. Run unchanged refresh, LLM-exclusion-only refresh, embedding-exclusion-only refresh, explicit `update_ref_doc`, then unchanged repaired refresh. Record incoming/stored hashes, rendered embedding inputs, embedding calls, native receipts and all three scores. Policy-only refresh returns false and retains the 0.047511 effect; explicit update embeds once per world and makes the difference zero.
+
+## Enforced access: PostgreSQL and Qdrant
+
+Inputs: [reader snapshots](data/reader_repair/snapshots/) and [target identities](data/reader_repair/public_manifest.json). Both deployments reuse the 192-document, 24-query, 48-comparison fixture without new encoding.
+
+### PostgreSQL 16.2
+
+1. Create an isolated local database `auditstudy` with login roles `limited_auditor` and `score_auditor`; use SCRAM authentication. As its trusted initializer, apply [schema.sql](data/access_sql/schema.sql), which creates the nonlogin owner, private tables and functions with pinned search paths.
+2. Load four document states into `private.documents`, queries into `private.queries`, query–target mappings into `private.targets`, and trusted state digests into `private.epochs`. Use epoch names `old_w0`, `old_w1`, `new_w0`, `new_w1`. The scorer computes exhaustive double-precision cosine, ordering by descending score and ascending UID.
+3. The limited role can call only approved-query top-ten and state-receipt functions. Exercise table/vector reads, ID lookup, COPY, system-file access, role escalation, private/privileged routines, writes, protected-schema creation and unsupported query/epoch requests. Retain the exact SQL and errors. Outer filtering, offsets and batching operate on already limited results.
+4. The stronger role has three added function grants: target scores, full scores and vector export. Measure each route sequentially and batched across both worlds/all queries. Also filter full scores to the declared pairs and exported vectors to the target union. Batch SQL, parameters and native results are retained in [responses.jsonl.gz](data/access_sql/responses.jsonl.gz).
+5. Use one warmup and three measured rounds per state/route, rotating route order. Count calls, returned scores and UTF-8 compact JSON value bytes. Record median/range elapsed time including collection, decoding and route-specific vector reconstruction; exclude common startup/load/validation. Compare every route to complete native scores and check unchanged loaded state and grants.
+
+**Expected result:** fourteen privilege probes and five unsupported requests fail. Top ten detects all old effects and accepts no repairs. Batched target scores accept 48/48 with 96 scores/8,187 bytes in one call (median 0.017 s); filtered full scoring returns the same bytes but takes 1.918 s; full output returns 9,216 scores/786,073 bytes. These grants express a configured application policy, not PostgreSQL defaults.
+
+### Qdrant server 1.15.4
+
+1. Start an isolated server with an admin API key and a native `read_only_api_key`. Create four cosine collections from the same snapshots; bind native point IDs to synthetic UIDs using [identity.json](data/access_qdrant/identity.json). Freeze state during collection and compare full vector readbacks before/afterward.
+2. Use the read-only key for all measured routes: depths 10/20/50/192, exact top ten, ID/payload-filtered target queries, filtered queries with vectors, batched target queries, target fetch and full scroll. Set `exact=true` for exact/target/full validation. These small collections are not an ANN-quality experiment.
+3. Attempt eight writes with the read-only key, and reads with missing/invalid keys. Probe the twenty read capabilities and classify REST operations in [API_INVENTORY.csv](data/access_qdrant/API_INVENTORY.csv). Preserve response status and exact body bytes.
+4. Run old then corrected states, three repetitions per route in the [registered order](data/access_qdrant/protocol.json), then world/query order. Compare returned scores with exhaustive native scores. Count HTTP calls, body bytes, scores, vector coordinates and client/server elapsed time; report medians and ranges, excluding setup and probes.
+
+**Expected result:** eight writes are denied, twenty read probes succeed, and 31/71 classified REST operations are exercised. Batched target queries use two requests and 4,654 response bytes to accept all 48 repairs (median 0.011 s). Read-only access permits score/vector retrieval; it is not a top-k-only boundary. Corrected depth 20/50 accepts 5/25 comparisons, compared with Haystack's 2/24 on the same vectors.
+
+## Private EHR study
+
+The private EHR dataset was used with authorization from the data custodian. Its directory contains only the [data availability statement](data/ehr/README.md). The study's methods and results are described in Section V-E and Supplement G of the paper; this experiment is excluded from public reproduction.
+
+## Paired-score retention
+
+Evidence: [data/score_retention](data/score_retention); source responses are the [state-bound target observations](data/equal_access/binding/).
+
+1. For each old/corrected state and world, retain two native target scores for each of 24 fixed queries. Bind each response to its query digest, eligible target/native IDs, scorer, state descriptor and epoch under the supplied contract.
+2. Serialize compact sorted-key JSON. Chain each entry's sequence, previous hash and payload with SHA256; bind the initial hash to the contract and log ID. Flush and fsync at each stage end; retain independent count/root checkpoints after records 48 and 96.
+3. Verify chain, checkpoints, declared coverage and state/query/target binding. Compare payloads with the separately retained source responses. Compute within-stage paired differences; do not substitute old-stage scores for missing new-stage evidence.
+4. Replay three local serialization/append/fsync/verification runs. Record log, contract and checkpoint bytes separately. Exercise score edits, dropped/duplicated/reordered entries, wrong query/target/native ID/world/state/epoch/descriptor, and rewritten chains with original or replaced checkpoints.
+
+**Expected result:** one log has 96 records/192 scores/123,341 bytes; contract/checkpoints add 19,302/470 bytes. Median local processing is 10.258 ms, excluding source preparation and acquisition. Paired new logs accept all 48 repairs; old logs plus new top-ten observations accept none. Thirteen negative controls fail. A rewritten chain with replaced checkpoints passes internal integrity but fails source comparison; the mechanism does not authenticate a hostile source.
+
+## Additional analyses of the saved observations
+
+- **Rank margin:** for each of 24 queries, compare all 192 candidate scores across worlds and the baseline gap between ranks ten and eleven. Acceptance requires maximum absolute change <= epsilon and gap > 2 epsilon. Reclassify the five migration/reader stages; these are repeated observations.
+- **SciFact repair transitions:** join included/excluded states on engine, depth, query and target. Count visibility (0/1/2 histories) and T/N/I transition matrices for every saved condition. These are separately rebuilt states, not a live repair execution.
+- **Recall-to-cutoff bound:** for each response calculate missed true neighbors `X=k(1-R)`. At each fixed k, compare cutoff failure frequency with `min(1, mean(X))`; pooled depths use `mean(K(1-R))`. Retain all twelve efSearch/depth strata. The fixed query grid does not satisfy an iid calibration contract.
+- **Double omissions:** select geometry cells whose target is absent in both phases, recount labels and interval-width changes for every method, and retain engine/depth strata. All 932 double omissions remain insufficient, although 492 difference intervals narrow.
+
+These calculations are implemented in [extensions.py](scripts/extensions.py). [precision.py](scripts/precision.py) separately reclassifies every supplied precision view at the six declared tolerances using exact rational endpoints.
